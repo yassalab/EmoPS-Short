@@ -1,20 +1,28 @@
-#####################################
-#######################################
-#module         : emodt.py
-#author         : Derek Delisle
-#email          : ddelisle@uci.edu
-#date           : 9/22/2016
-#status         : In development 
-#usage          : python emodt.py
-#######################################
-#######################################
+'''
 
-"""This script runs an instance of the Emotional Discrimination Task.
+Original module         : emodt.py
+author         : Derek Delisle
+email          : ddelisle@uci.edu
+date           : 9/22/2016
+status         : In development
+usage          : python emodt.py
+
+Short Adaptation:
+
+Creator         : Derek Vinent Taylor
+Date            : July 17, 2021
+Last Modified   : August 31, 2021
+
+
+This script runs an instance of the Emotional Discrimination Task.
 This task is similar to the regular object task (MST), with the 
 difference that images are organized by valence (emotion) and arousal
 (intensity) in addition to similarity. Furthermore there are 3 sets of
 stimuli to choose from, each one having unique images.
-"""
+
+This is a shorter adaptation of the version Developed by Derek Delisle
+
+'''
 
 from __future__ import division
 import os, sys, math, random, time
