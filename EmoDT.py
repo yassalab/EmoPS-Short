@@ -31,8 +31,7 @@ class EmoDT(object):
         self.testImgs = self.GetTestImgs()
         self.window = Window(fullscr=True, units='pix', color='black', 
                              allowGUI=False)
-        if gaussianEffect:
-            self.ApplyGaussianBlur()
+        self.ApplyGreyBackground()
         self.circles, self.circText = self.GetIndicators()
         self.imgScale = self.imgFill*min(self.window.size[0],self.window.size[1])
         self.fixCrs = TextStim(self.window, "+", color='White', height=100)
@@ -43,42 +42,22 @@ class EmoDT(object):
             self.scoreList.append([[0,0],[0,0],[0,0],[0,0]])
         random.seed(subID)
 
-    def ApplyGaussianBlur(self):
-        """Creates and applies a radial gradient using NumPy for better performance."""
-        # Get window size
-        colorDistance = 120
-        width, height = self.window.size
+    def ApplyGreyBackground(self):
+        '''
+        This will create an 800x800 image of gaussian noise
+        It will return the generated noise distribution and the image
+        '''
+        SHAPE = (self.window.size[0],self.window.size[1])
+        # 255 is max luminance
+        # 1 SD is just around 1/6 of the max for a gaussian,
+        # but let's tighten up the SD to 1/10 of the max so we don't get any negatives
+        GREY_VALUE = 128
+        grey_image_arr = np.full(SHAPE,GREY_VALUE,dtype=np.uint8)
+        
+        image = Image.fromarray(grey_image_arr)
+        image = image.convert('RGB')
 
-        # Create a coordinate grid: two 2D arrays for X and Y coordinates
-        y, x = np.ogrid[:height, :width]
-
-        # Calculate the center of the screen
-        center_x, center_y = width // 2, height // 2
-
-        # Compute the distance from each pixel to the center
-        distance = np.sqrt((x - center_x) ** 2 + (y - center_y) ** 2)
-
-        # Normalize distance to [0, 1] and invert (1 at the edges, 0 in the center)
-        max_distance = np.sqrt(center_x ** 2 + center_y ** 2)
-        normalized_distance = (distance / max_distance)
-
-        # Scale to 8-bit grayscale (0-255)
-        smoothed_distance = normalized_distance ** 2
-        gradient_array = (smoothed_distance * colorDistance).astype(np.uint8)
-        noise = np.random.normal(0, 5, gradient_array.shape)
-        gradient_array = np.clip(gradient_array + noise, 0, colorDistance).astype(np.uint8)
-
-        # Create a PIL image from the NumPy array
-        gradient = Image.fromarray(gradient_array, mode='L')
-
-        # Apply a Gaussian blur for smoothness
-        blurred_gradient = gradient.filter(ImageFilter.GaussianBlur(radius=30))
-
-        # Create an ImageStim with the blurred gradient
-        img_stim = ImageStim(self.window, image=blurred_gradient)
-
-        # Set the blurred gradient as the background image
-        self.window.backgroundImage = img_stim
+        self.window.backgroundImage = image
     
     def MakeLog(self):
         """Creates and returns a logfile. Each logfile is named with a
@@ -129,7 +108,7 @@ class EmoDT(object):
         """
         win = self.window
         hScalar = 0.8
-        vScalar = 0.2
+        vScalar = 0.0
         r = 50
         textHeight = 3*r/5
 
@@ -286,27 +265,11 @@ class EmoDT(object):
         #pylink stuff
         el_tracker = pylink.getEYELINK()
         el_tracker.setOfflineMode()
-        el_tracker.sendCommand("clear_screen 0")
+        el_tracker.sendCommand("Show Image")
         el_tracker.imageBackdrop(imgPath,
                                  0, 0, int(theImage.size[0]), int(theImage.size[1]),
                                  0, 0, pylink.BX_MAXCONTRAST)
 
-        # eyelink drift correction
-        while not self.dummyMode:
-            # terminate the task if no longer connected to the tracker or
-            # user pressed Ctrl-C to terminate the task
-            if (not el_tracker.isConnected()) or el_tracker.breakPressed():
-                return 'P', 0
-
-            # drift-check and re-do camera setup if ESCAPE is pressed
-            try:
-                error = el_tracker.doDriftCorrect(int(theImage.size[0]/2.0),
-                                                int(theImage.size[1]/2.0), 1, 1)
-                # break following a success drift-check
-                if error is not pylink.ESC_KEY:
-                    break
-            except:
-                pass
         el_tracker.setOfflineMode()
         try:
             el_tracker.startRecording(1, 1, 1, 1)
@@ -314,14 +277,35 @@ class EmoDT(object):
             print("ERROR:", error)
             return pylink.TRIAL_ERROR
         
-        # Allocate some time for the tracker to cache some samples
         pylink.pumpDelay(100)
+        
+        self.window.flip()
+        wait(2) # show blank screen for 2 seconds
+        theImage.draw(self.window)        
+        self.window.flip()
+        wait(2) # show image for 2 seconds
+        self.fixCrs.draw(self.window)
+        self.window.flip()
+        wait(2) # show fixiation cursor for 2 seconds
+        
+        pylink.pumpDelay(100)
+        el_tracker.stopRecording()
+
+        el_tracker.sendCommand("Show Choices")
+        try:
+            el_tracker.startRecording(1, 1, 1, 1)
+        except RuntimeError as error:
+            print("ERROR:", error)
+            return pylink.TRIAL_ERROR
+        
+        pylink.pumpDelay(100)
+        
+        # Allocate some time for the tracker to cache some samples
         self.clock.reset()
         clearEvents()
         keyPresses = []
 
         while self.clock.getTime() < trialDur:
-            theImage.draw(self.window)        
             for i in range(len(circs)):
                 circs[i].draw(self.window)
                 texts[i].draw(self.window)
@@ -344,10 +328,10 @@ class EmoDT(object):
         pylink.pumpDelay(100)
         el_tracker.stopRecording()
         
-        self.window.flip()
         self.fixCrs.draw(self.window)
         self.window.flip()
-        wait(self.ITI, self.ITI)
+        wait(self.ITI)
+        self.window.flip()
 
         if (not keyPresses):
             return '', 0

@@ -40,9 +40,9 @@ SET_A_LOC = 'setA'
 SET_B_LOC = 'setB'
 SET_C_LOC = 'setC'
 LOG_LOC = 'logs'
-TD_STUDY = 2.5      #Trial duration for study trials
-TD_TEST = 2.5       #Trial duration for test trials
-ITI = 0.5
+TD_STUDY = 2      #Trial duration for study trials
+TD_TEST = 2       #Trial duration for test trials
+ITI = 3           #Intertrial interval
 IMG_FILL = 0.8
 GAUSSIAN_EFFECT = True # Set to True to apply a Gaussian blur to the background
 dummy_mode = True # Set to True to run in dummy mode
@@ -84,6 +84,7 @@ while (1):
     dialog.show()
     subOK = False
     setOK = False
+    # change to gui.dlg.OK if not working on other versions of psychopy
     if gui.OK:
         if dialog.data[0].isdigit():
             subID = int(dialog.data[0])

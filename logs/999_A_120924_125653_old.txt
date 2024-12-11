@@ -1,0 +1,44 @@
+EmoDT Task: 12:56:53 on 12-09-24
+Subject ID: 999
+Using set A
+Trial Duration (Study): 2.50
+Trial Duration (Test): 2.50
+ITI: 3.00
+
+
+
+Begin Study
+
+TrialNum,Image,TrialType,Keypress,RT
+1,10033a.jpg,LureA,1,1.07
+2,30051a.jpg,LureA,2,0.81
+
+### Study Terminated Early ###
+
+
+
+#### Test Not Run ####
+
+
+
+
+
+Scores:
+
+
+LDI-Negative Low Sim: 0.00
+LDI-Negative High Sim: 0.00
+LDI-Neutral Low Sim: 0.00
+LDI-Neutral High Sim: 0.00
+LDI-Positive Low Sim: 0.00
+LDI-Positive High Sim: 0.00
+
+
+LDI-Negative Collapsed: 0.00
+LDI-Neutral Collapsed: 0.00
+LDI-Positive Collapsed: 0.00
+
+
+RecMem-Neg: 0.00
+RecMem-Neu: 0.00
+RecMem-Pos: 0.00

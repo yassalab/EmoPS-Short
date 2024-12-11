@@ -1,0 +1,7 @@
+EmoDT Task: 12:52:17 on 12-02-24
+Subject ID: 999
+Using set A
+Trial Duration (Study): 2.50
+Trial Duration (Test): 2.50
+ITI: 0.50
+
